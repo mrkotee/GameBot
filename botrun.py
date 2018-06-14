@@ -3,14 +3,14 @@ from random import randint
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime as dt
-try:
-    from bot.YaSync import sync_main_files  # Синхронизация с я.диском
-    sync_main_files()
-except Exception as e:
-    print(
-        'can not sync\n %s' % e
-    )
-    pass
+# try:
+#     from bot.YaSync import sync_main_files  # Синхронизация с я.диском
+#     sync_main_files()
+# except Exception as e:
+#     print(
+#         'can not sync\n %s' % e
+#     )
+#     pass
 
 from bot.settings import *
 from bot.bd.models import Dozor, Harbour, Energy
@@ -20,7 +20,7 @@ from bot.main import Brow
 def log_in_file(text):
     with open('logfile.txt', 'a') as f:
         f.write(str(dt.now().strftime("%Y-%m-%d %H.%M.%S ")) + text + '\n')
-        print(text + str(dt.now().time().strftime("%H:%M:%S")))
+        print(text + ' ' + str(dt.now().time().strftime("%H:%M:%S")))
 
 
 engine = create_engine('sqlite:///bot/bd/base.bd', echo=False)
@@ -30,6 +30,8 @@ session = Session()
 for d in session.query(Harbour).order_by(Harbour.id)[::-1][0:17]:
     if d.date == dt.now().date():
         harb_i += 1
+    else:
+        break
 
 for d in session.query(Dozor).order_by(Dozor.id)[::-1][0:5]:
     if d.date == dt.now().date():
@@ -37,6 +39,7 @@ for d in session.query(Dozor).order_by(Dozor.id)[::-1][0:5]:
         break
     else:
         dozornyi = False
+        break
 
 for d in session.query(Energy).order_by(Energy.id)[::-1][0:5]:
     if d.date == dt.now().date():
@@ -44,6 +47,7 @@ for d in session.query(Energy).order_by(Energy.id)[::-1][0:5]:
         break
     else:
         b_energy = False
+        break
 
 timer_battle = 0
 timer_harbour = 0
@@ -158,12 +162,6 @@ while True:
 
             b.end_session()
             log_in_file('resurs')
-
-    if b.icelight_timer < time.time():  # Новогодняя акция
-        b.start()
-        b.login(email, password)
-        b.news_close()
-        b.end_session()
 
     time.sleep(50)
 

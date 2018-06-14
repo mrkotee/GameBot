@@ -100,7 +100,6 @@ class Brow:
         self.brow.get('http://avatar.botva.ru/')
 
     def login(self, email, password):
-        # if self.cookies:
         while True:
             try:
                 element = WebDriverWait(self.brow, 60).until(
@@ -114,10 +113,9 @@ class Brow:
                 psw = self.brow.find_element_by_name('password')
                 psw.send_keys(password + Keys.ENTER)
                 time.sleep(4)
-                wait = WebDriverWait(self.brow, 10).until(
-                    EC.element_to_be_clickable((By.ID, 'm1'))
-                )
-                break
+
+                if 'index.php' in self.brow.current_url:  # http://avatar.botva.ru/index.php?from=login
+                    break
             except:
                 self.brow.refresh()
 
@@ -156,7 +154,7 @@ class Brow:
         # self.ice_light()
 
     def end_session(self):
-        self.click_valentain = False
+        # self.click_valentain = False
         self.brow.close()
         self.brow.quit()
 
