@@ -1,71 +1,32 @@
 import time
 from random import randint
-import webdav3.client as wc
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime as dt
-import os
+try:
+    from bot.YaSync import sync_main_files  # Синхронизация с я.диском
+    sync_main_files()
+except Exception as e:
+    print(
+        'can not sync\n %s' % e
+    )
+    pass
+
+from bot.settings import *
+from bot.bd.models import Dozor, Harbour, Energy
+from bot.main import Brow
 
 
 def log_in_file(text):
     with open('logfile.txt', 'a') as f:
         f.write(str(dt.now().strftime("%Y-%m-%d %H.%M.%S ")) + text + '\n')
+        print(text + str(dt.now().time().strftime("%H:%M:%S")))
 
-
-def wd_sync(client, remote_path, relative_local_path):
-    try:
-        local_path = os.path.join(os.getcwd() + relative_local_path)
-        m_file_time = os.path.getmtime(local_path)
-        m_wdfile_timestr = client.info(remote_path)['modified']
-        m_wdfile_time = dt.strptime(m_wdfile_timestr, '%a, %d %b %Y %X %Z').timestamp()
-        if float(m_file_time) < float(m_wdfile_time):
-            client.download_file(remote_path, local_path)
-        else:
-            client.upload_file(remote_path, local_path)
-    except:
-        client.download_file(remote_path, local_path)
-
-    
-
-options = {
-    'webdav_hostname': "https://webdav.yandex.ru",
-    'webdav_login':    "mrkotee08@ya.ru",
-    'webdav_password': "fiopegvjeoxwfehl"
-    }
-client = wc.Client(options)
-# # client.sync('/bot/', 'bot')
-
-wd_sync(client, '/bot/bd/base.bd', '/bot/bd/base.bd')
-wd_sync(client, '/bot/main.py', '/bot/main.py')
-wd_sync(client, '/bot/settings.py', '/bot/settings.py')
-
-
-from bot.settings import *
-from bot.main import Dozor, Harbour, Energy, Brow
-
-###################################################
-# try:
-#     with open('e_pass.txt', 'r') as f:
-#         email, password = f.readline().split(',')
-# except:
-#     email = input('Введите логин: ')
-#     password = input('Введите пароль: ')
-#     with open('e_pass.txt', 'w') as f:
-#         f.write(email + ',' + password)
-
-# h_farm = 3   #hours to farm
-timer_battle = 0
-timer_harbour = 0
-harb_i = 0
-# b_energy = False
-
-timer_present = 0
-
-b = Brow()
 
 engine = create_engine('sqlite:///bot/bd/base.bd', echo=False)
 Session = sessionmaker(bind=engine)
 session = Session()
+
 for d in session.query(Harbour).order_by(Harbour.id)[::-1][0:17]:
     if d.date == dt.now().date():
         harb_i += 1
@@ -83,16 +44,19 @@ for d in session.query(Energy).order_by(Energy.id)[::-1][0:5]:
         break
     else:
         b_energy = False
-#####################################
 
-# time.sleep(15*60)
+timer_battle = 0
+timer_harbour = 0
+harb_i = 0
+timer_present = 0
 
-#####################################
-print('start ' + str(dt.now().time().strftime("%H:%M:%S")))
+
+b = Brow()
+
 log_in_file('start')
 
 mnts = [randint(1, 12), randint(16, 27), randint(31, 42), randint(46, 55)]
-print('mnts = ', mnts)
+
 log_in_file('mnts = ' + ' '.join(str(mnt) for mnt in mnts))
 
 
@@ -103,12 +67,8 @@ while True:
         harb_i = 0
         b_energy = False
 
-    
     if time.time() > timer_battle:
-        # print('start b_f_s')
-        # b = Brow('Chrome')
         b.start()
-        # b.headless_start()
         b.login(email, password)
         b.news_close()
         
@@ -116,8 +76,6 @@ while True:
         if on_farm:
             timer_battle = time.time() + on_farm
             b.end_session()
-            # b.brow.close()
-            # b.brow.quit()
         else:
             while True:
                 gold = b.gold_now()
@@ -156,7 +114,6 @@ while True:
                 b.wd.upload_as()
     
             b.b_t_s()
-
             # b.m_b_t()
 
             on_farm = b.time_on_farm()
@@ -166,18 +123,13 @@ while True:
                 timer_battle = time.time() + on_farm
             
             b.end_session()
-            # b.brow.close()
-            # b.brow.quit()
             timer_battle = time.time() + h_farm * 3600 + randint(5, 200)
-            print('b stat farm ' + str(dt.now().time().strftime("%H:%M:%S")))
+
             log_in_file('b stat farm ')
 
-
     for mnt in mnts:
-        if dt.now().minute == mnt: # and randint(1, 2) == 1:
-            # print('start resurs')
+        if dt.now().minute == mnt:  # and randint(1, 2) == 1:
             time.sleep(randint(1, 120))
-            # b = Brow('Chrome')
             b.start()
             b.login(email, password)
             b.news_close()
@@ -205,18 +157,13 @@ while True:
                 timer_harbour = time.time() + 3700
 
             b.end_session()
-            # b.brow.close()
-            # b.brow.quit()
-            print('resurs ' + str(dt.now().time().strftime("%H:%M:%S")))
             log_in_file('resurs')
 
-    if b.icelight_timer < time.time():
+    if b.icelight_timer < time.time():  # Новогодняя акция
         b.start()
         b.login(email, password)
         b.news_close()
         b.end_session()
-        # b.brow.close()
-        # b.brow.quit()
 
     time.sleep(50)
 

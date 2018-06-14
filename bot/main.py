@@ -1,9 +1,7 @@
-import time, pickle
+import time
 from random import randint
-import webdav3.client as wc
-from sqlalchemy import create_engine, Table, Column, Integer, String, DateTime, MetaData, ForeignKey
-from sqlalchemy.orm import mapper, sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -11,140 +9,16 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from datetime import datetime as dt
+from bot.bd.models import IceTownUpgrades, Dozor, Harbour, Energy, Log
+try:
+    from bot.YaSync import WdavForBd
+except:
+    pass
+
 from bot.settings import max_instrument_cost, max_stone_cost, min_glory_points_to_buy
 
-
-Base = declarative_base()
-
-
-class IceTownUpgrades(Base):
-    __tablename__ = 'icetownupgrades'
-    id = Column(Integer, primary_key=True)
-    building_id = Column(Integer)
-    building_lvl = Column(Integer)
-    upgrade_cost = Column(Integer)
-
-    def __init__(self, building_id, building_lvl, upgrade_cost):
-        self.building_id = building_id
-        self.building_lvl = building_lvl
-        self.upgrade_cost = upgrade_cost
-
-    def __str__(self):
-        building_names = ['Tree', 'Miner', 'Tower', 'Leprecon', 'Storage', 'FireHouse']
-
-        return "{}, lvl {} - {} icecubes".format(
-            building_names[self.building_id], self.building_lvl, self.upgrade_cost)
-
-class Dozor(Base):
-    __tablename__ = 'dozor'
-    id = Column(Integer, primary_key=True)
-    date_time = Column(DateTime)
-    gold = Column(Integer)
-
-    def __init__(self, gold=1):
-        self.date_time = dt.now()
-        self.gold = gold
-
-    def __repr__(self):
-        return "{}, gold = {}" .format(self.date_time, self.gold)
-
-    @property
-    def date(self):
-        # return dt.strptime(str(self.date_time), "%Y-%m-%d %H:%M:%S.%f").date()
-        return self.date_time.date()
-
-    @property
-    def time(self):
-        return self.date_time.strftime('%H:%M:%S')
-
-
-class Harbour(Base):
-    __tablename__ = 'harbour'
-    id = Column(Integer, primary_key=True)
-    date_time = Column(DateTime)
-
-    def __init__(self):
-        self.date_time = dt.now()
-
-    def __repr__(self):
-        return "{}" .format(self.date_time)
-
-    @property
-    def date(self):
-        # return dt.strptime(str(self.date_time), "%Y-%m-%d %H:%M:%S.%f").date()
-        return self.date_time.date()
-
-    @property
-    def time(self):
-        return self.date_time.strftime('%H:%M:%S')
-
-
-class Energy(Base):
-    __tablename__ = 'energy'
-    id = Column(Integer, primary_key=True)
-    date_time = Column(DateTime)
-    hundreds = Column(Integer)
-
-    def __init__(self, hundreds):
-        self.date_time = dt.now()
-        self.hundreds = hundreds
-
-    def __repr__(self):
-        return "{}, {} сотни".format(self.date_time, self.hundreds)
-
-    @property
-    def date(self):
-        # return dt.strptime(str(self.date_time), "%Y-%m-%d %H:%M:%S.%f").date()
-        return self.date_time.date()
-
-    @property
-    def time(self):
-        return self.date_time.strftime('%H:%M:%S')
-
-
-class Log(Base):
-    __tablename__ = 'log'
-    id = Column(Integer, primary_key=True)
-    date_time = Column(DateTime)
-    action = Column(String)
-
-    def __init__(self, action):
-        self.date_time = dt.now()
-        self.action = action
-
-    def __repr__(self):
-        return "{} {}, {}".format(self.date, self.time, self.action)
-
-    @property
-    def date(self):
-        # return dt.strptime(str(self.date_time), "%Y-%m-%d %H:%M:%S.%f").date()
-        return self.date_time.date()
-
-    @property
-    def time(self):
-        return self.date_time.strftime('%H:%M:%S')
-
-
-class WdavForBd:
-
-    def _connect(self):
-        options = {
-            'webdav_hostname': "https://webdav.yandex.ru",
-            'webdav_login':    "mrkotee08@ya.ru",
-            'webdav_password': "fiopegvjeoxwfehl"
-            }
-        self.client = wc.Client(options)
-
-    def download(self):
-        self._connect()
-        self.client.download_file('/bot/bd/base.bd', 'bot/bd/base.bd')
-
-    def upload_as(self):
-        self._connect()
-        self.client.upload_async('/bot/bd/base.bd', 'bot/bd/base.bd')
-
         
-class Brow():
+class Brow:
     """login (email, password)
     news_close
     energy - [0]now, [1]max
@@ -161,64 +35,7 @@ class Brow():
     chest - take reward from map
     """
 
-    # @classmethod
-    # def ftp_online(cls):
-    #     server_ftp = 'ftp.mrkotee.esy.es'
-    #     # server_ftp = '31.170.166.87'
-    #     port_ftp = 21
-    #     login_ftp = 'u732346623'
-    #     pass_ftp = '89054278649'
-    #     ftpConnect = FTP()
-    #     try:
-    #         ftpConnect.connect(server_ftp, port_ftp)
-    #         ftpConnect.login(login_ftp, pass_ftp)
-    #         ftpConnect.quit()
-    #         ftpConnect.close()
-    #         enable = True
-    #     except:
-    #         enable = False
-    #     return enable
-    
-    # @classmethod
-    # def __ftp(cls):
-    #     server_ftp = 'ftp.mrkotee.esy.es'
-    #     # server_ftp = '31.170.166.87'
-    #     port_ftp = 21
-    #     login_ftp = 'u732346623'
-    #     pass_ftp = '89054278649'
-    #     ftpConnect = FTP()
-    #     ftpConnect.connect(server_ftp, port_ftp)
-    #     ftpConnect.login(login_ftp, pass_ftp)
-    #     ftpConnect.cwd('/public_html/bd')
-    #     return ftpConnect
 
-    # @classmethod
-    # def _download_base(cls):
-    #     pass
-    #     # if cls.ftp_online():
-    #     #     ftp_con = cls.__ftp()
-    #     #     name_bd = 'base.bd'
-
-    #     #     with open('bd/' + name_bd, 'wb') as f:
-    #     #         ftp_con.retrbinary('RETR ' + name_bd, f.write)
-
-    #     #     ftp_con.quit()
-    #     #     ftp_con.close()
-    #     #     print('{} - base download'.format(dt.now().time()))
-
-    # @classmethod
-    # def _upload_base(cls):
-    #     pass
-    #     # if cls.ftp_online():
-    #     #     ftp_con = cls.__ftp()
-    #     #     name_bd = 'base.bd'
-
-    #     #     with open('bd/' + name_bd, 'rb') as f:
-    #     #         ftp_con.storbinary('STOR ' + name_bd, f, 1024)
-
-    #     #     ftp_con.quit()
-    #     #     ftp_con.close()
-    #     #     print('{} - base upload'.format(dt.now().time()))
 
     def add_to_base(self, action, number=0):
         """doz, harb, energy"""
@@ -282,7 +99,6 @@ class Brow():
         self.brow.implicitly_wait(2)
         self.brow.get('http://avatar.botva.ru/')
 
-
     def login(self, email, password):
         # if self.cookies:
         while True:
@@ -304,8 +120,6 @@ class Brow():
                 break
             except:
                 self.brow.refresh()
-        
-        
 
     def news_close(self):
         try:
@@ -812,6 +626,31 @@ class Brow():
         except:
             return False
 
+    def npc(self):
+        try:
+            wait = WebDriverWait(self.brow, 5).until(
+                EC.element_to_be_clickable((By.ID, 'm1'))
+            )
+            self.brow.find_element_by_id('annoying_npc').click()
+            wait = WebDriverWait(self.brow, 3).until(
+                EC.element_to_be_clickable((By.ID, 'm1'))
+            )
+            return True
+        except:
+            return False
+
+    def remove_dot(self, str_summ):
+        # if '.' in str_summ:
+        nums = str_summ.split('.')
+        for i, number in enumerate(nums):
+            if i == 0:
+                n = str(number)
+            else:
+                n += str(number)
+        return int(n)
+
+    ##### Акции #####
+
     def octogame(self):
         self.brow.get('http://avatar.botva.ru/event.php?a=weekofauthority')
         # wait = WebDriverWait(self.brow, 60).until(
@@ -942,29 +781,6 @@ class Brow():
 
                 print('dogs {}:{}:{}'.format(str(dt.now().hour),
                                             str(dt.now().minute), str(dt.now().second)))
-
-    def npc(self):
-        try:
-            wait = WebDriverWait(self.brow, 5).until(
-                EC.element_to_be_clickable((By.ID, 'm1'))
-            )
-            self.brow.find_element_by_id('annoying_npc').click()
-            wait = WebDriverWait(self.brow, 3).until(
-                EC.element_to_be_clickable((By.ID, 'm1'))
-            )
-            return True
-        except:
-            return False
-        
-    def remove_dot(self, str_summ):
-        # if '.' in str_summ:
-        nums = str_summ.split('.')
-        for i, number in enumerate(nums):
-            if i == 0:
-                n = str(number)
-            else:
-                n += str(number)
-        return int(n)
 
     def ice_mine(self):
         if time.time() > self.ice_timer:
@@ -1269,33 +1085,4 @@ class Brow():
 
         # except:
         #     time.sleep(1)
-
-
-
-###################################################
-
-
-
-
-# engine = create_engine('sqlite:///bd/base.bd', echo=False)
-# Session = sessionmaker(bind=engine)
-# session = Session()
-# for d in session.query(Harbour).order_by(Harbour.id)[::-1][0:17]:
-#     if d.date == dt.now().date():
-#         harb_i += 1
-
-# for d in session.query(Dozor).order_by(Dozor.id)[::-1][0:5]:
-#     if d.date == dt.now().date():
-#         dozornyi = True
-#         break
-#     else:
-#         dozornyi = False
-
-# for d in session.query(Energy).order_by(Energy.id)[::-1][0:5]:
-#     if d.date == dt.now().date():
-#         b_energy = True
-#         break
-#     else:
-#         b_energy = False
-
 
