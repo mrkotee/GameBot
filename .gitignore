@@ -1,3 +1,4 @@
 bot/hostinger ftp sync.py
 bot/YaSync.py
-Selenium game bot/bot/bd/base.bd
+bot/bd/base.bd
+/__pycache__/
