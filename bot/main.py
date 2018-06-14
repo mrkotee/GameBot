@@ -141,19 +141,19 @@ class Brow:
             # print('octo as npc {}:{}:{}, gifts: {}'.format(str(dt.now().hour), 
             #     str(dt.now().minute), str(dt.now().second), str(self.octo_gifts - 1)))
 
-        if (self.valentine_timer - 15) < time.time():
-            sleep_time = self.valentine_timer - time.time()
-            if sleep_time > 0:
-                print(self.valentine_timer)
-                time.sleep(sleep_time + 3)
-            self.st_valentine()
+        # if (self.valentine_timer - 15) < time.time():
+        #     sleep_time = self.valentine_timer - time.time()
+        #     if sleep_time > 0:
+        #         print(self.valentine_timer)
+        #         time.sleep(sleep_time + 3)
+        #     self.st_valentine()
 
         
         self.stats_prices = self.stats_gold()
         # self.cloud_island()
-        self.ice_upgrade()
-        self.ice_mine()
-        self.ice_light()
+        # self.ice_upgrade()
+        # self.ice_mine()
+        # self.ice_light()
 
     def end_session(self):
         self.click_valentain = False

@@ -2,3 +2,6 @@ bot/hostinger ftp sync.py
 bot/YaSync.py
 bot/bd/base.bd
 /__pycache__/
+/e_pass.txt
+/logfile.txt
+/chromedriver.exe
