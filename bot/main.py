@@ -13,7 +13,7 @@ from bot.bd.models import IceTownUpgrades, Dozor, Harbour, Energy, Log
 try:
     from bot.YaSync import WdavForBd
 except:
-    pass
+    WdavForBd = False
 
 from bot.settings import max_instrument_cost, max_stone_cost, min_glory_points_to_buy
 
@@ -51,12 +51,14 @@ class Brow:
             session.add(Harbour())
             session.add(Log('Harb'))
             session.commit()
-            self.wd.upload_as()
+            if WdavForBd:
+                self.wd.upload_as()
             # self._upload_base()
         elif action == 'energy':
             session.add(Energy(number))
             session.add(Log('energy'))
-            self.wd.upload_as()
+            if WdavForBd:
+                self.wd.upload_as()
         else:
             print('session error')
 
@@ -71,9 +73,10 @@ class Brow:
         self.max_stone_cost = max_stone_cost
         self.min_glory_points_to_buy = min_glory_points_to_buy
 
-        self.wd = WdavForBd()
-        # self.wd.download()
-        # self._download_base()
+        if WdavForBd:
+            self.wd = WdavForBd()
+            # self.wd.download()
+            # self._download_base()
 
         self.stats_prices = []
 
