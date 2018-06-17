@@ -20,7 +20,7 @@ from bot.main import Brow
 def log_in_file(text):
     with open('logfile.txt', 'a') as f:
         f.write(str(dt.now().strftime("%Y-%m-%d %H.%M.%S ")) + text + '\n')
-        print(text + str(dt.now().time().strftime("%H:%M:%S")))
+        print(text + ' ' + str(dt.now().time().strftime("%H:%M:%S")))
 
 
 engine = create_engine('sqlite:///bot/bd/base.bd', echo=False)

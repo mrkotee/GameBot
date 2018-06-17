@@ -1,5 +1,8 @@
 from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine
+import os
+
 
 
 Base = declarative_base()
@@ -113,3 +116,15 @@ class Log(Base):
     def time(self):
         return self.date_time.strftime('%H:%M:%S')
 
+
+if __name__ == '__main__':
+    path = 'base.bd'
+
+else:
+    path = 'bot/bd/base.bd'
+
+if not os.path.exists(path):
+    engine = create_engine('sqlite:///%s' % path, echo=False)
+    Base.metadata.create_all(bind=engine)
+
+    
