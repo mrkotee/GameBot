@@ -27,27 +27,39 @@ engine = create_engine('sqlite:///bot/bd/base.bd', echo=False)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-for d in session.query(Harbour).order_by(Harbour.id)[::-1][0:17]:
-    if d.date == dt.now().date():
-        harb_i += 1
+querylist = session.query(Harbour).order_by(Harbour.id)[::-1][0:17]
+if querylist:
+    for d in querylist:
+        if d.date == dt.now().date():
+            harb_i += 1
+else:
+    harb_i = 0
 
-for d in session.query(Dozor).order_by(Dozor.id)[::-1][0:5]:
-    if d.date == dt.now().date():
-        dozornyi = True
-        break
-    else:
-        dozornyi = False
+querylist = session.query(Dozor).order_by(Dozor.id)[::-1][0:5]
+if querylist:
+    for d in querylist:
+        if d.date == dt.now().date():
+            dozornyi = True
+            break
+        else:
+            dozornyi = False
+else:
+    dozornyi = False
 
-for d in session.query(Energy).order_by(Energy.id)[::-1][0:5]:
-    if d.date == dt.now().date():
-        b_energy = True
-        break
-    else:
-        b_energy = False
+querylist = session.query(Energy).order_by(Energy.id)[::-1][0:5]
+if querylist:
+    for d in querylist:
+        if d.date == dt.now().date():
+            b_energy = True
+            break
+        else:
+            b_energy = False
+else:
+    b_energy = False
+
 
 timer_battle = 0
 timer_harbour = 0
-harb_i = 0
 timer_present = 0
 
 
@@ -77,6 +89,7 @@ while True:
             timer_battle = time.time() + on_farm
             b.end_session()
         else:
+            log_in_file('start main circle')
             while True:
                 gold = b.gold_now()
                 for i, s in enumerate(b.stats_prices):
@@ -89,11 +102,6 @@ while True:
                 b.buy_energy()
                 b_energy = True
 
-            if b.valentine_timer - 300 < time.time():
-                if b.valentine_timer > 0:
-                    time.sleep(b.valentine_timer + 5 - time.time())
-                b.st_valentine()
-
             b.b_t_s()
             b.mine_rage()
 
@@ -101,10 +109,6 @@ while True:
             # b.battle_rage()
 
             if not dozornyi:  # dt.now().hour < 8 and
-                if b.valentine_timer - 300 < time.time():
-                    if b.valentine_timer > 0:
-                        time.sleep(b.valentine_timer + 5 - time.time())
-                    b.st_valentine()
                 
                 b.dozor()
                 dozornyi = True
@@ -158,12 +162,6 @@ while True:
 
             b.end_session()
             log_in_file('resurs')
-
-    if b.icelight_timer < time.time():  # Новогодняя акция
-        b.start()
-        b.login(email, password)
-        b.news_close()
-        b.end_session()
 
     time.sleep(50)
 
