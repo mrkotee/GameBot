@@ -89,15 +89,18 @@ class Brow:
         self.valentine_timer = 0
 
     def start(self):
-        self.brow = webdriver.Chrome()
-        # self.brow.implicitly_wait(2)
-        self.brow.get('http://avatar.botva.ru/')
-        assert 'Ботва' in self.brow.title
-        # self.octo_gifts = 0
+        try:
+            self.brow = webdriver.Chrome()
+            # self.brow.implicitly_wait(2)
+            self.brow.get('http://avatar.botva.ru/')
+            # self.octo_gifts = 0
+        except:
+            self.headless_start()
 
     def headless_start(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")
+        options.add_argument('window-size=1200x600')
         self.brow = webdriver.Chrome(chrome_options=options)
         self.brow.implicitly_wait(2)
         self.brow.get('http://avatar.botva.ru/')
